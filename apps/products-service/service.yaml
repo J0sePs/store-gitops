@@ -1,0 +1,16 @@
+# Service de products-service
+apiVersion: v1
+kind: Service
+metadata:
+  name: products-service
+  labels:
+    app.kubernetes.io/name: products-service
+    app.kubernetes.io/part-of: store
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: products-service
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http

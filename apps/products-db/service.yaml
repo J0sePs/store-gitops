@@ -1,0 +1,17 @@
+# Service headless: da el nombre DNS estable "products-db" (puerto 5432) al pod de la base de datos
+apiVersion: v1
+kind: Service
+metadata:
+  name: products-db
+  labels:
+    app.kubernetes.io/name: products-db
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: store
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: products-db
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: postgres

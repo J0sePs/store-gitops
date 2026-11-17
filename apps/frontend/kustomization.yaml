@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: store
+resources:
+  - deployment.yaml
+  - service.yaml
+# La CI actualiza este bloque con: kustomize edit set image frontend=<repositorio ECR>:<sha corto>
+# Hasta que corra la CI, la imagen es un marcador (cuenta 000000000000, tag 0000000).
+images:
+  - name: frontend
+    newName: 000000000000.dkr.ecr.us-east-1.amazonaws.com/frontend
+    newTag: "0000000"
+# APP_VERSION toma siempre el tag de la imagen ya transformada (no hay que editarlo a mano)
+replacements:
+  - source:
+      kind: Deployment
+      name: frontend
+      fieldPath: "spec.template.spec.containers.[name=frontend].image"
+      options:
+        delimiter: ":"
+        index: 1
+    targets:
+      - select:
+          kind: Deployment
+          name: frontend
+        fieldPaths:
+          - "spec.template.spec.containers.[name=frontend].env.[name=APP_VERSION].value"

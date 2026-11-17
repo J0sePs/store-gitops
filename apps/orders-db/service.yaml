@@ -1,0 +1,17 @@
+# Service headless: da el nombre DNS estable "orders-db" (puerto 5432) al pod de la base de datos
+apiVersion: v1
+kind: Service
+metadata:
+  name: orders-db
+  labels:
+    app.kubernetes.io/name: orders-db
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: store
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: orders-db
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: postgres

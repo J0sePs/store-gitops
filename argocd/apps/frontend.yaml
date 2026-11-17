@@ -1,0 +1,28 @@
+# Application de Argo CD para frontend: sincroniza apps/frontend de este repositorio con el namespace "store".
+# Sincronización automática: Argo CD aplica los cambios de git, borra lo que ya no está (prune)
+# y revierte los cambios hechos a mano en el clúster (selfHeal).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: frontend
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: store
+  # Al borrar la Application se borran también sus recursos
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/J0sePs/store-gitops.git
+    targetRevision: main
+    path: apps/frontend
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: store
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
