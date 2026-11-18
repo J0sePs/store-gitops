@@ -12,7 +12,7 @@ Push a store-app (main) → GitHub Actions: test, build y push a ECR (tag = SHA 
 
 ```
 apps/
-├── frontend/            Deployment (2 réplicas) + Service LoadBalancer (80 → 8080)
+├── frontend/            Deployment (1 réplica) + Service LoadBalancer (80 → 8080)
 ├── products-service/    Deployment + Service ClusterIP (8000)
 ├── orders-service/      Deployment + Service ClusterIP (8080)
 ├── products-db/         StatefulSet PostgreSQL + PVC gp3 + Service headless
@@ -27,7 +27,16 @@ Todo vive en el namespace `store`. Cada componente tiene su `kustomization.yaml`
 - **Probes:** los tres Deployments usan `/health` (readiness y liveness). Las bases usan `pg_isready`.
 - **`APP_VERSION`:** siempre es igual al tag de la imagen. Kustomize lo copia del campo `image` (bloque `replacements`), así que no se edita a mano y el pie de página de la aplicación muestra la versión desplegada.
 - **Imágenes de marcador:** mientras la CI no haya corrido, las imágenes son `000000000000.dkr.ecr.us-east-1.amazonaws.com/<nombre>:0000000`. Los pods quedarán en `ImagePullBackOff` hasta la primera ejecución de la CI; es lo esperado.
-- **Réplicas:** el frontend tiene 2 (para ver el rolling update); los servicios 1, porque dos instancias creando a la vez la tabla y los datos de ejemplo en el primer arranque podrían chocar.
+- **Réplicas y capacidad:** todo corre en 2 nodos `t3.small` (el plan Gratuito de AWS solo permite instancias de la capa gratuita): como máximo 11 pods y ≈ 1,4 GiB por nodo. Por eso **cada Deployment tiene 1 réplica** (con `maxSurge: 1` y `maxUnavailable: 0` el pod nuevo entra antes de retirar el viejo, sin cortes) y los `requests` de memoria son mínimos. Dos instancias creando a la vez la tabla y los datos de ejemplo en el primer arranque también podrían chocar.
+
+  | Componente | requests (CPU / memoria) | limits (CPU / memoria) |
+  |---|---|---|
+  | frontend | 25m / 32Mi | 100m / 64Mi |
+  | products-service | 50m / 96Mi | 300m / 192Mi |
+  | orders-service | 25m / 32Mi | 150m / 64Mi |
+  | products-db, orders-db | 50m / 128Mi | 300m / 256Mi |
+
+  Las bases arrancan con `shared_buffers=32MB` y `max_connections=20` para caber en ese presupuesto. Antes de añadir pods o réplicas recalcula la capacidad con `scripts/check-capacity.py` de `store-app` (ver `infra/terraform/README.md`).
 - **Cada servicio usa solo su base de datos** (database-per-service).
 
 ## Requisitos previos
