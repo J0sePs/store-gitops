@@ -2,26 +2,26 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: store
 resources:
-  - deployment.yaml
-  - service.yaml
+- deployment.yaml
+- service.yaml
 # La CI actualiza este bloque con: kustomize edit set image orders-service=<repositorio ECR>:<sha corto>
 # Hasta que corra la CI, la imagen es un marcador (cuenta 000000000000, tag 0000000).
 images:
-  - name: orders-service
-    newName: 000000000000.dkr.ecr.us-east-1.amazonaws.com/orders-service
-    newTag: "0000000"
+- name: orders-service
+  newName: 205346659030.dkr.ecr.us-east-1.amazonaws.com/orders-service
+  newTag: "0688166"
 # APP_VERSION toma siempre el tag de la imagen ya transformada (no hay que editarlo a mano)
 replacements:
-  - source:
+- source:
+    fieldPath: spec.template.spec.containers.[name=orders-service].image
+    kind: Deployment
+    name: orders-service
+    options:
+      delimiter: ':'
+      index: 1
+  targets:
+  - fieldPaths:
+    - spec.template.spec.containers.[name=orders-service].env.[name=APP_VERSION].value
+    select:
       kind: Deployment
       name: orders-service
-      fieldPath: "spec.template.spec.containers.[name=orders-service].image"
-      options:
-        delimiter: ":"
-        index: 1
-    targets:
-      - select:
-          kind: Deployment
-          name: orders-service
-        fieldPaths:
-          - "spec.template.spec.containers.[name=orders-service].env.[name=APP_VERSION].value"
