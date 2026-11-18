@@ -9,7 +9,7 @@ resources:
 images:
 - name: frontend
   newName: 205346659030.dkr.ecr.us-east-1.amazonaws.com/frontend
-  newTag: "0688166"
+  newTag: 89511da
 # APP_VERSION toma siempre el tag de la imagen ya transformada (no hay que editarlo a mano)
 replacements:
 - source:
