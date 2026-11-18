@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/name: frontend
     app.kubernetes.io/part-of: store
 spec:
-  replicas: 2
+  replicas: 1
   # El pod nuevo debe estar listo antes de retirar el anterior (sin cortes)
   strategy:
     type: RollingUpdate
@@ -55,11 +55,11 @@ spec:
             timeoutSeconds: 2
           resources:
             requests:
-              cpu: 50m
-              memory: 64Mi
+              cpu: 25m
+              memory: 32Mi
             limits:
-              cpu: 250m
-              memory: 128Mi
+              cpu: 100m
+              memory: 64Mi
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
